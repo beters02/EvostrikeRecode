@@ -1,0 +1,56 @@
+{
+  "name": "Advanced Survival Demo 1",
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "$ignoreUnknownInstances": true,
+      "$path": "src/shared",
+      "Services": {
+        "$ignoreUnknownInstances": true,
+        "$path": "service"
+      },
+      "Modules": {
+        "$ignoreUnknownInstances": true,
+        "$path": "module"
+      },
+      "Libraries": {
+        "$ignoreUnknownInstances": true,
+        "$path": "library"
+      },
+      "Assets": {
+        "$ignoreUnknownInstances": true,
+        "$path": "asset"
+      },
+      "Events": {
+        "$ignoreUnknownInstances": true,
+        "$path": "event"
+      },
+      "Framework": {
+        "$ignoreUnknownInstances": true,
+        "$path": "src/framework"
+      }
+    },
+
+    "ReplicatedFirst": {
+      "$ignoreUnknownInstances": true,
+      "$path": "src/replicatedfirst"
+    },
+
+    "ServerScriptService": {
+      "$ignoreUnknownInstances": true,
+      "$path": "src/server"
+    },
+
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "$ignoreUnknownInstances": true,
+        "$path": "src/client/player"
+      },
+      "StarterCharacterScripts": {
+        "$ignoreUnknownInstances": true,
+        "$path": "src/client/character"
+      }
+    }
+  }
+}
