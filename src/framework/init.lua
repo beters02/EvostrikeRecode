@@ -1,10 +1,12 @@
-if not game:IsLoaded() then
+local RunService = game:GetService("RunService")
+
+if RunService:IsClient() and not game:IsLoaded() then
     game.Loaded:Wait()
+    print('loaded')
 end
 
 local InsertService = game:GetService("InsertService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 
 local Framework = { -- # Add easy access to files here.
     Modules = ReplicatedStorage.Modules,
@@ -13,8 +15,7 @@ local Framework = { -- # Add easy access to files here.
     Events = ReplicatedStorage.Events,
     Assets = ReplicatedStorage.Assets,
 
-    Loaded = script.Loaded,
-    _statesRF = script.States
+    Loaded = script.Loaded
 }
 
 local states = require(Framework.Modules.States)
@@ -36,8 +37,8 @@ function Framework.States:init()
     end
 end
 
-function Framework.States:Get(state)
-    return states:Get(state) -- States does all the Replicated Variable Networking for you!
+function Framework.States:Get(state): states.State
+    return states:Get(state):: states.State -- States does all the Replicated Variable Networking for you!
 end
 
 -- Prepare AssetManager
@@ -46,7 +47,7 @@ end
 Framework.AssetManager = {}
 
 local function initAssetManagerServer()
-    for _, category in pairs(Framework.Assets) do
+    for _, category in pairs(Framework.Assets:GetChildren()) do
         for assetName, assetId in pairs(require(category)) do
             local _m = InsertService:LoadAsset(assetId)
             local _mc = _m:GetChildren()
@@ -67,11 +68,18 @@ function Framework.AssetManager:init()
     end
 end
 
+--
+
+function Framework:IsLoaded()
+    return Framework.States:Get("Game"):get("Loaded")
+end
+
 -- Run Script
 Framework.States:init()
 Framework.AssetManager:init()
 
 if RunService:IsServer() then
+    Framework.States:Get("Game"):set("Loaded", true)
     Framework.Loaded:FireAllClients()
 end
 
