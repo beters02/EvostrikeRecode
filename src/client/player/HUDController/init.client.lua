@@ -11,4 +11,3 @@ local GameStateChangedConn = ClientGameState:changed(function(key, prev, new)
 end)
 
 task.wait(1)
---print(ClientGameState)
