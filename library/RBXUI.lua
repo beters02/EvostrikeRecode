@@ -117,9 +117,6 @@ end
 
 --@function Set the Gui's background to an image
 function Gui:SetBackgroundImage(imgid)
-    if not string.match(tostring(imgid), "assetid") then
-        imgid = "rbxassetid://" .. tostring(imgid)
-    end
     local imglabel
     if not self.Instance:FindFirstChild("BACKGROUND_IMAGE") then
         imglabel = Instance.new("ImageLabel", self.Instance)

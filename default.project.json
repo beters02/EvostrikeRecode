@@ -30,7 +30,7 @@
 
     "ReplicatedFirst": {
       "$ignoreUnknownInstances": true,
-      "$path": "src/client/load"
+      "$path": "src/replicatedfirst"
     },
 
     "ServerScriptService": {
