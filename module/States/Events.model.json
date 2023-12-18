@@ -8,6 +8,7 @@
       {
         "Name": "RemoteEvent",
         "ClassName": "RemoteEvent"
+<<<<<<< HEAD
       },
       {
         "Name": "BindableEvent",
@@ -16,6 +17,8 @@
       {
         "Name": "BindableFunction",
         "ClassName": "RemoteFunction"
+=======
+>>>>>>> parent of 961f59b (loading screen almost done!)
       }
     ]
   }
