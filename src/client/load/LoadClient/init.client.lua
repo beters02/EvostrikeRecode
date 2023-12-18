@@ -1,15 +1,11 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ContentProvider = game:GetService("ContentProvider")
-local Framework = require(ReplicatedStorage:WaitForChild("Framework"))
-local RBXUI = require(Framework.Libraries.RBXUI)
-local Loaded = Framework.Events.Player.Loaded
+-- Init Black Screen
+game:GetService("ReplicatedFirst"):RemoveDefaultLoadingScreen()
+local blackScreenGui = require(script:WaitForChild("BlackScreen"))
+blackScreenGui:Enable()
 
--- Init Loading GUI
-local loadingGui = RBXUI.Gui.new({Name = "LoadingGui"})
-RBXUI.Page.new(loadingGui, {Name = "MainPage", Size = UDim2.fromScale(1,1), Position = UDim2.fromScale(0.5,0.5), AnchorPoint = Vector2.new(0.5,0.5), BackgroundTransparency = 0})
-loadingGui:SetBackgroundImage(require(Framework.Assets.HUD).MAIN_MENU_BG)
-loadingGui:Parent()
-loadingGui:Enable()
+-- Init Framework and Var
+local Framework = require(game:GetService("ReplicatedStorage"):WaitForChild("Framework"))
+local Loaded = Framework.Events.Player.Loaded
 
 -- Wait for Framework AssetManager to load
 if not Framework:IsLoaded() then
@@ -17,7 +13,17 @@ if not Framework:IsLoaded() then
     Framework.Loaded.OnClientEvent:Wait()
 end
 
-function PrepareEnums() -- Prepare Assets to load via Location Enums
+-- Init Loading GUI
+local loadingScreenGui = require(script:WaitForChild("LoadingScreen"))
+
+-- Play Intro Music
+local introSound = Framework.AssetManager:Insert("HUD", "SOUND_CSL_INTRO")
+introSound = Framework.AssetManager:Seperate(introSound)
+introSound.Parent = loadingScreenGui.Instance
+introSound:Play()
+
+-- Prepare Assets to load via Location Enums
+function PrepareEnums()
     local Loads = {}
     local function recurse(instance)
         for _, v in pairs(instance:GetChildren()) do
@@ -36,15 +42,18 @@ function PrepareEnums() -- Prepare Assets to load via Location Enums
     return Loads
 end
 
+-- Loading Assets
 Framework.States:Set("ClientGame", "LoadingScreenState", "Loading_Assets")
-ContentProvider:PreloadAsync(PrepareEnums(), function()
+game:GetService("ContentProvider"):PreloadAsync(PrepareEnums(), function()
     print("ContentProvider loaded asset.")
 end)
 
+-- Invoking server for loading confirmation
 Framework.States:Set("ClientGame", "LoadingScreenState", "Loading_Server")
 local success = Loaded:InvokeServer() -- success, var?
 if success then
     print("Client Loaded")
-    loadingGui:Destroy()
+    blackScreenGui:Destroy()
+    loadingScreenGui:Destroy()
     Framework.States:Set("ClientGame", "LoadingScreenState", "FINISH")
 end

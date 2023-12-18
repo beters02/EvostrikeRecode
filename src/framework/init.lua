@@ -11,20 +11,22 @@ local Framework = {
     Events = ReplicatedStorage.Events,
     Assets = ReplicatedStorage.Assets,
 
-    Loaded = script.Loaded
+    Loaded = script.Loaded,
+
+    TypeEnums = require(script:WaitForChild("TypeEnums"))
 }
 local states = require(Framework.Modules.States)
 local tables = require(Framework.Libraries.Table)
 
 -- Prepare States
---@summary Framework-organized Server States
-Framework.States = {
-    Stored = {
-        Game = {properties = {replicated = true, clientReadOnly = true}, def = { Loaded = false }}
-    }
+Framework.States = {}
+
+--Server States
+Framework.States.Stored = {
+    Game = {properties = {replicated = true, clientReadOnly = true}, def = { Loaded = false }},
 }
 
---@summary Client States
+--Client States
 Framework.States.StoredClient = {
     ClientGame = {properties = {replicated = false}, def = { LoadingScreenState = "Loading_Game" }},
     HUD = {properties = {replicated = false}, def = { currentOpenUI = {} }}
@@ -46,6 +48,27 @@ end
 --@summary AssetManager Tree: { Category: ModuleScript = {assetid...} }
 --                          Turns AssetIDs into Models that are children of the ModuleScript
 Framework.AssetManager = {}
+
+--@summary Returns a model with the desired Instance
+function Framework.AssetManager:Insert(parent, asset)
+    local assetInstance = Framework.Assets[parent][asset]
+    assetInstance = assetInstance:Clone()
+    assetInstance.Parent = ReplicatedStorage
+    return assetInstance
+end
+
+--@summary Seperate a returned Insert Model which only has 1 child.
+function Framework.AssetManager:Seperate(model)
+    local c = model:GetChildren()
+    if #c ~= 1 then
+        warn("Cannot seperate an Insert Model with more or less than 1 child.")
+        return false
+    end
+    local newModel = c[1]
+    newModel.Parent = ReplicatedStorage
+    model:Destroy()
+    return newModel
+end
 
 -- Module Functions
 function Framework:IsLoaded()
@@ -69,15 +92,18 @@ local function initAssetManagerServer()
     for _, category in pairs(Framework.Assets:GetChildren()) do
         for assetName, assetId in pairs(require(category)) do
             local _m = InsertService:LoadAsset(assetId)
-            local _mc = _m:GetChildren()
-            if #_mc == 1 then
-                _m:GetChildren()[1].Parent = category
-                _m:Destroy()
-                continue
-            end
             _m.Parent = category
             _m.Name = assetName
+            handleAssetTypeCreation(assetName, assetId, _m)
         end
+    end
+end
+
+function handleAssetTypeCreation(assetName, assetId, model)
+    if string.match(assetName, "IMG") then
+        Instance.new("ImageLabel", model).Image = assetId
+    elseif string.match(assetName, "SOUND") then
+        Instance.new("Sound", model).SoundId = assetId
     end
 end
 
