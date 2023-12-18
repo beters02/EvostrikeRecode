@@ -10,6 +10,9 @@
         "ClassName": "RemoteEvent"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> parent of 5d78ecb (accidental undo)
       },
       {
         "Name": "BindableEvent",
@@ -17,11 +20,15 @@
       },
       {
         "Name": "BindableFunction",
+<<<<<<< HEAD
         "ClassName": "RemoteFunction"
 =======
 >>>>>>> parent of 961f59b (loading screen almost done!)
 =======
 >>>>>>> parent of 961f59b (loading screen almost done!)
+=======
+        "ClassName": "BindableFunction"
+>>>>>>> parent of 5d78ecb (accidental undo)
       }
     ]
   }

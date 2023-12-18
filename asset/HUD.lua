@@ -1,0 +1,3 @@
+return {
+    MAIN_MENU_BG = 11335093179
+}

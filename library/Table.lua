@@ -61,7 +61,7 @@ function Tables.doIn(tab, callback)
     end
 end
 
-function Tables.random(tab)
+function Tables.getRandomValue(tab)
     return tab[math.random(1,#tab)]
 end
 
