@@ -1,3 +1,0 @@
-return {
-    game.ReplicatedStorage.Assets
-}

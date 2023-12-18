@@ -8,6 +8,14 @@
       {
         "Name": "RemoteEvent",
         "ClassName": "RemoteEvent"
+      },
+      {
+        "Name": "BindableEvent",
+        "ClassName": "BindableEvent"
+      },
+      {
+        "Name": "BindableFunction",
+        "ClassName": "BindableFunction"
       }
     ]
   }
