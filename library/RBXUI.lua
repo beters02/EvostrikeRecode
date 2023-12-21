@@ -5,6 +5,8 @@ local RunService = game:GetService("RunService")
 -- Add Updating Variables for text related components -- VariableLink ?
 -- Make FitText the default text option for Button and remove ButtonLabel, as well as remove public access to FitText
 
+-- Lmao this project has turned into a mess because of children, folders and lack of actual inheritence.
+
 -- INFO
 --@creator  beters
 --@summary  RBXUI is a simple solution for creating roblox UI via code.
@@ -21,6 +23,8 @@ local Button
 local FitText
 local Label
 local ButtonLabel
+local Image
+local ButtonImage
 
 -- Features
 local Tag
@@ -64,6 +68,35 @@ function inheritDefaultProperties(defaults, rbxprop)
     return rbxprop
 end
 
+function fillAssetID(id)
+    if not string.match(tostring(id), "assetid") then
+        id = "rbxassetid://" .. tostring(id)
+    end
+    return id
+end
+
+function initComponentFolders(component, folders)
+    component.Buttons = {}
+    component.Labels = {}
+    component.Images = {}
+    component.Folders = folders or {Buttons = true, Labels = true, Images = true}
+    for i, _ in pairs(component.Folders) do
+        component.Folders[i] = Instance.new("Folder", component.Instance)
+        component.Folders[i].Name = i
+    end
+end
+
+local Component = {}
+Component.__index = Component
+
+function Component:Enable()
+    self.Instance.Visible = true 
+end
+
+function Component:Disable()
+    self.Instance.Visible = false
+end
+
 --[[GUI COMPONENT]]
 --@summary Gui's are the base component of any UI made within RBXUI
 --@require Gui:Enable() automatically opens the Main Page if there is one and disables the rest. Set EnableOpenMainPage to false to disable this feature.
@@ -76,6 +109,7 @@ Gui.new = function(rbxprop)
     local self = setmetatable({}, Gui)
     self.Name = rbxprop.Name
     self.EnableOpenMainPage = true
+    self.UIType = "Gui"
 
     self.Instance = Instance.new("ScreenGui")
     applyRBXPropertiesInstance(self.Instance, rbxprop, {
@@ -116,10 +150,8 @@ function Gui:Disable()
 end
 
 --@function Set the Gui's background to an image
-function Gui:SetBackgroundImage(imgid)
-    if not string.match(tostring(imgid), "assetid") then
-        imgid = "rbxassetid://" .. tostring(imgid)
-    end
+function Gui:SetBackgroundImage(imgid, color)
+    imgid = fillAssetID(imgid)
     local imglabel
     if not self.Instance:FindFirstChild("BACKGROUND_IMAGE") then
         imglabel = Instance.new("ImageLabel", self.Instance)
@@ -127,6 +159,9 @@ function Gui:SetBackgroundImage(imgid)
         imglabel.Size = UDim2.fromScale(1, 1)
         imglabel.AnchorPoint = Vector2.new(0.5,0.5)
         imglabel.Position = UDim2.fromScale(0.5,0.5)
+    end
+    if color then
+        imglabel.ImageColor3 = color
     end
     imglabel.Image = imgid
     imglabel.Visible = true
@@ -171,24 +206,19 @@ Page.new = function(gui, rbxprop)
     self.Name = rbxprop.Name
     self.Main = gui
     self.Main.Pages[rbxprop.Name] = self
-
+    self.UIType = "Page"
     self.Instance = Instance.new("Frame", gui.Folders.Pages)
     applyRBXPropertiesInstance(self.Instance, rbxprop, {
-        Size = Gui.SizeEnum.Half,
+        Size = Gui.SizeEnum.Full,
         Position = Gui.PosEnum.Middle.Position,
+        AnchorPoint = Gui.PosEnum.Middle.AnchorPoint,
         Visible = false,
         BackgroundTransparency = 1
     })
 
-    self.Buttons = {}
-    self.Labels = {}
-    self.Folders = {Buttons = true, Labels = true}
-    for i, _ in pairs(self.Folders) do
-        self.Folders[i] = Instance.new("Folder", self.Instance)
-        self.Folders[i].Name = i
-    end
+    initComponentFolders(self)
 
-    self._nextUpdate = tick()
+    --[[self._nextUpdate = tick()
     self.CoreUpdateLoop = RunService.RenderStepped:Connect(function(dt)
         local t = tick()
         if t >= self._nextUpdate then
@@ -196,7 +226,7 @@ Page.new = function(gui, rbxprop)
         end
 
         -- update variables function here
-    end)
+    end)]]
 
     return self
 end
@@ -256,6 +286,7 @@ Button.new = function(page, rbxprop)
     self.Main.Buttons[rbxprop.Name] = self
     self._connections = {}
     self._binding = false
+    self.UIType = "Button"
 
     self.Instance = Instance.new("TextButton", page.Folders.Buttons)
     applyRBXPropertiesInstance(self.Instance, rbxprop, {
@@ -329,6 +360,7 @@ Label.new = function(page, rbxprop, textprop)
     self.Main = page
     self.Main.Labels[rbxprop.Name] = self
     self.Instance = Instance.new("Frame", page.Folders.Labels)
+    self.UIType = "Label"
 
     applyRBXPropertiesInstance(self.Instance, rbxprop, {
         Position = Gui.PosEnum.Middle.Position,
@@ -361,6 +393,55 @@ function Label:SetSize(size)
     return setComponentSize(self, size)
 end
 
+--[[IMAGE COMPONENT]]
+--@summary Display an Image
+Image = {}
+Image.__index = Image
+Image.new = function(component, rbxprop) -- Can be applied to Page or ButtonLabel
+    assert(rbxprop, "Must add a properties table with a Name key,v.")
+    assert(rbxprop.Name, "Must define a name for the Image.")
+
+    local self = setmetatable({}, Image)
+    self.UIType = "Image"
+    self.Name = rbxprop.Name
+    self.Main = component
+    self.Main.Images[rbxprop.Name] = self
+    self.Instance = Instance.new("ImageLabel", self.Main.Folders.Images)
+    applyRBXPropertiesInstance(self.Instance, rbxprop, {
+        Position = Gui.PosEnum.Middle.Position,
+        Size = Gui.SizeEnum.Point,
+        Visible = true,
+        ZIndex = 2
+    })
+
+    return self
+end
+
+function Image:Enable()
+    self.Instance.Visible = true
+end
+
+function Image:Disable()
+    self.Instance.Visible = false
+end
+
+function Image:SetImage(img, color)
+    self.Instance.Image = fillAssetID(img)
+    if color then
+        self.Instance.Image.ImageColor3 = color
+    end
+end
+
+--@function Set the position or anchorPoint
+function Image:SetPos(pos, anchorPoint)
+    return setComponentPos(self, pos, anchorPoint)
+end
+
+--@function Set the size
+function Image:SetSize(size)
+    return setComponentSize(self, size)
+end
+
 --[[BUTTON LABEL COMPONENT]]
 --@summary A Button Label is a FitText inside of a RBXUI Button
 --          rbxprop are applied to the Button, do button.FitText... for FitText changes
@@ -387,7 +468,10 @@ ButtonLabel.new = function(page, rbxprop, textprop)
     
     local button = Button.new(page, rbxprop)
     button.FitText = FitText.new(button, textprop)
-    return setmetatable(button, ButtonLabel)
+    button.UIType = "ButtonLabel"
+    button = setmetatable(button, ButtonLabel)
+    initComponentFolders(button)
+    return button
 end
 
 function ButtonLabel:SetText(str)
@@ -412,6 +496,7 @@ FitText.__index = FitText
 FitText.new = function(component, rbxprop)
     local self = setmetatable({}, FitText)
     self.Name = component.Name
+    self.UIType = "FitText"
     local text = Instance.new("TextLabel", component.Instance)
     applyRBXPropertiesInstance(text, rbxprop, {
         Text = "FitText",
@@ -496,7 +581,8 @@ local RBXUI = {
         Pos = Gui.PosEnum,
         Size = Gui.SizeEnum
     },
-    Tag = Tag
+    Tag = Tag,
+    Image = Image
 }
 
 return RBXUI

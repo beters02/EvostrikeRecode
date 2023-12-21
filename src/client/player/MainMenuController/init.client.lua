@@ -1,7 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Framework = require(ReplicatedStorage:WaitForChild("Framework"))
 local FrTypes = Framework.TypeEnums
-local Module = require(script:WaitForChild("Module"))
 local states = require(Framework.Modules.States)
 
 -- Wait until Loading Screen is finished.
@@ -20,4 +19,5 @@ if currentLState ~= "FINISH" then
     repeat task.wait() until loaded
 end
 
--- Init Main Menu
+-- Init Main Menu UI
+local mainMenuGui = require(script:WaitForChild("UI"))

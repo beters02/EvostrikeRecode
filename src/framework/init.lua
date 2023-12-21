@@ -23,6 +23,7 @@ Framework.States = {}
 
 --Server States
 Framework.States.Stored = {
+    Framework = {properties = {replicated = true, clientReadOnly = true}, def = { Loaded = false }},
     Game = {properties = {replicated = true, clientReadOnly = true}, def = { Loaded = false }},
 }
 
@@ -50,7 +51,7 @@ end
 Framework.AssetManager = {}
 
 --@summary Returns a model with the desired Instance
-function Framework.AssetManager:Insert(parent, asset)
+function Framework.AssetManager:Insert(parent, asset): Model
     local assetInstance = Framework.Assets[parent][asset]
     assetInstance = assetInstance:Clone()
     assetInstance.Parent = ReplicatedStorage
@@ -58,7 +59,7 @@ function Framework.AssetManager:Insert(parent, asset)
 end
 
 --@summary Seperate a returned Insert Model which only has 1 child.
-function Framework.AssetManager:Seperate(model)
+function Framework.AssetManager:Seperate(model): any
     local c = model:GetChildren()
     if #c ~= 1 then
         warn("Cannot seperate an Insert Model with more or less than 1 child.")
@@ -72,7 +73,7 @@ end
 
 -- Module Functions
 function Framework:IsLoaded()
-    return Framework.States:Get("Game", "Loaded")
+    return Framework.States:Get("Framework", "Loaded")
 end
 --
 
@@ -100,10 +101,14 @@ local function initAssetManagerServer()
 end
 
 function handleAssetTypeCreation(assetName, assetId, model)
+    local fixedid = assetId
+    if not string.match(tostring(assetId), "assetid") then
+        fixedid = "rbxassetid://" .. tostring(assetId)
+    end
     if string.match(assetName, "IMG") then
-        Instance.new("ImageLabel", model).Image = assetId
+        Instance.new("ImageLabel", model).Image = fixedid
     elseif string.match(assetName, "SOUND") then
-        Instance.new("Sound", model).SoundId = assetId
+        Instance.new("Sound", model).SoundId = fixedid
     end
 end
 
@@ -111,11 +116,10 @@ end
 if RunService:IsServer() then
     initStatesServer()
     initAssetManagerServer()
-    Framework.States:Set("Game", "Loaded", true)
+    Framework.States:Set("Framework", "Loaded", true)
     Framework.Loaded:FireAllClients()
     return Framework
 end
 
 initStatesClient()
-
 return Framework

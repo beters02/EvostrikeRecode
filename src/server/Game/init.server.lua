@@ -1,18 +1,39 @@
+--[[
+
+    There will be two places:
+    Lobby and Game
+
+    if game.placeid == Place.Game (we get gamemode from player joined)
+    if game.placeid == Place.Lobby (always lobby gamemode, which is deathmatch)
+
+]]
+
+
+
 local Players = game:GetService("Players")
+Players.CharacterAutoLoads = false
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
 local Framework = require(ReplicatedStorage:WaitForChild("Framework"))
-local PlayerManager = require(script.PlayerManager)
-local PlayerLoaded = Framework.Events.Player.Loaded
 
--- The function called when a player is loaded,  calls PlayerManager.PlayerLoaded
-function _playerLoaded(player)
-    -- Do some middleware stuff
+function StartGamemode(gamemodeStr)
+    local gamemodeScript = script:FindFirstChild(gamemodeStr)
+    if not gamemodeScript then
+        return false
+    end
 
-    --TODO: Allow support for PlayerLoaded to return variables to the client.
-    PlayerManager.PlayerLoaded(player)
+    local currentScript = script:FindFirstChild("CurrentScript")
+    if currentScript then
+        require(script.Interface):Stop()
+        currentScript:Destroy()
+    end
+    
+    currentScript = gamemodeScript:Clone()
+    currentScript.Parent = gamemodeScript.Parent
+    currentScript.Enabled = true
 
-    return true
+    print('GamemodeScript enabled from GameScript.')
 end
 
-PlayerLoaded.OnServerInvoke = _playerLoaded
+-- if game.placeid check, for now its lobby.
+StartGamemode("Lobby")

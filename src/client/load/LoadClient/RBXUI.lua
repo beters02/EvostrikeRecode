@@ -21,6 +21,8 @@ local Button
 local FitText
 local Label
 local ButtonLabel
+local Image
+local ButtonImage
 
 -- Features
 local Tag
@@ -64,6 +66,17 @@ function inheritDefaultProperties(defaults, rbxprop)
     return rbxprop
 end
 
+local Component = {}
+Component.__index = Component
+
+function Component:Enable()
+    self.Instance.Visible = true 
+end
+
+function Component:Disable()
+    self.Instance.Visible = false
+end
+
 --[[GUI COMPONENT]]
 --@summary Gui's are the base component of any UI made within RBXUI
 --@require Gui:Enable() automatically opens the Main Page if there is one and disables the rest. Set EnableOpenMainPage to false to disable this feature.
@@ -76,6 +89,7 @@ Gui.new = function(rbxprop)
     local self = setmetatable({}, Gui)
     self.Name = rbxprop.Name
     self.EnableOpenMainPage = true
+    self.UIType = "Gui"
 
     self.Instance = Instance.new("ScreenGui")
     applyRBXPropertiesInstance(self.Instance, rbxprop, {
@@ -171,6 +185,7 @@ Page.new = function(gui, rbxprop)
     self.Name = rbxprop.Name
     self.Main = gui
     self.Main.Pages[rbxprop.Name] = self
+    self.UIType = "Page"
 
     self.Instance = Instance.new("Frame", gui.Folders.Pages)
     applyRBXPropertiesInstance(self.Instance, rbxprop, {
@@ -182,7 +197,8 @@ Page.new = function(gui, rbxprop)
 
     self.Buttons = {}
     self.Labels = {}
-    self.Folders = {Buttons = true, Labels = true}
+    self.Images = {}
+    self.Folders = {Buttons = true, Labels = true, Images = true}
     for i, _ in pairs(self.Folders) do
         self.Folders[i] = Instance.new("Folder", self.Instance)
         self.Folders[i].Name = i
@@ -256,6 +272,7 @@ Button.new = function(page, rbxprop)
     self.Main.Buttons[rbxprop.Name] = self
     self._connections = {}
     self._binding = false
+    self.UIType = "Button"
 
     self.Instance = Instance.new("TextButton", page.Folders.Buttons)
     applyRBXPropertiesInstance(self.Instance, rbxprop, {
@@ -329,6 +346,7 @@ Label.new = function(page, rbxprop, textprop)
     self.Main = page
     self.Main.Labels[rbxprop.Name] = self
     self.Instance = Instance.new("Frame", page.Folders.Labels)
+    self.UIType = "Label"
 
     applyRBXPropertiesInstance(self.Instance, rbxprop, {
         Position = Gui.PosEnum.Middle.Position,
@@ -361,6 +379,39 @@ function Label:SetSize(size)
     return setComponentSize(self, size)
 end
 
+--[[IMAGE COMPONENT]]
+--@summary Display an Image
+Image = {}
+Image.__index = Image
+Image.new = function(page, rbxprop)
+    assert(rbxprop, "Must add a properties table with a Name key,v.")
+    assert(rbxprop.Name, "Must define a name for the Image.")
+
+    local self = setmetatable({}, Image)
+    self.UIType = "Image"
+    self.Name = rbxprop.Name
+    self.Main = page
+    self.Main.Images[rbxprop.Name] = self
+    self.Instance = Instance.new("ImageLabel", self.Main.Folders.Images)
+
+    applyRBXPropertiesInstance(self.Instance, rbxprop, {
+        Position = Gui.PosEnum.Middle.Position,
+        Size = Gui.SizeEnum.Point,
+        Visible = true,
+        ZIndex = 2
+    })
+
+    return self
+end
+
+function Image:Enable()
+    self.Instance.Visible = true
+end
+
+function Image:Disable()
+    self.Instance.Visible = false
+end
+
 --[[BUTTON LABEL COMPONENT]]
 --@summary A Button Label is a FitText inside of a RBXUI Button
 --          rbxprop are applied to the Button, do button.FitText... for FitText changes
@@ -387,6 +438,7 @@ ButtonLabel.new = function(page, rbxprop, textprop)
     
     local button = Button.new(page, rbxprop)
     button.FitText = FitText.new(button, textprop)
+    button.UIType = "ButtonLabel"
     return setmetatable(button, ButtonLabel)
 end
 
@@ -412,6 +464,7 @@ FitText.__index = FitText
 FitText.new = function(component, rbxprop)
     local self = setmetatable({}, FitText)
     self.Name = component.Name
+    self.UIType = "FitText"
     local text = Instance.new("TextLabel", component.Instance)
     applyRBXPropertiesInstance(text, rbxprop, {
         Text = "FitText",
@@ -496,7 +549,8 @@ local RBXUI = {
         Pos = Gui.PosEnum,
         Size = Gui.SizeEnum
     },
-    Tag = Tag
+    Tag = Tag,
+    Image = Image
 }
 
 return RBXUI

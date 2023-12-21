@@ -1,1 +1,3 @@
-return nil
+local MainMenu = {}
+
+return MainMenu
