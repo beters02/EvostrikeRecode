@@ -19,12 +19,15 @@ local RunService = game:GetService("RunService")
 -- Components
 local Gui
 local Page
+local SubPage
 local Button
 local FitText
+local FitTextInsert
 local Label
 local ButtonLabel
 local Image
 local ButtonImage
+local InsertLabel
 
 -- Features
 local Tag
@@ -110,6 +113,7 @@ Gui.new = function(rbxprop)
     self.Name = rbxprop.Name
     self.EnableOpenMainPage = true
     self.UIType = "Gui"
+    self.Enabled = false
 
     self.Instance = Instance.new("ScreenGui")
     applyRBXPropertiesInstance(self.Instance, rbxprop, {
@@ -140,6 +144,7 @@ function Gui:Enable()
         self.Pages.MainPage:Open()
     end
     self.Instance.Enabled = true
+    self.Enabled = true
 end
 
 function Gui:Disable()
@@ -147,6 +152,7 @@ function Gui:Disable()
         self.CurrentPage:Close()
     end
     self.Instance.Enabled = false
+    self.Enabled = false
 end
 
 --@function Set the Gui's background to an image
@@ -271,6 +277,47 @@ function Page:SetSize(size)
     return setComponentSize(self, size)
 end
 
+--[[SUB PAGE COMPONENT]]
+SubPage = {}
+SubPage.__index = SubPage
+
+function SubPage.new(page, rbxprop)
+    assert(rbxprop, "Must add a properties table with a Name key,v.")
+    assert(rbxprop.Name, "Must define a name for the Page.")
+    rbxprop = rbxprop or {}
+
+    local self = setmetatable({}, Page)
+    self.Name = rbxprop.Name
+    self.Main = page
+
+    local main = page.Main.Pages and page.Main or page.Main.Main
+    main.Pages[rbxprop.Name] = self
+
+    self.UIType = "Page"
+    self.Instance = Instance.new("Frame", main.Folders.Pages)
+    applyRBXPropertiesInstance(self.Instance, rbxprop, {
+        Size = Gui.SizeEnum.Full,
+        Position = Gui.PosEnum.Middle.Position,
+        AnchorPoint = Gui.PosEnum.Middle.AnchorPoint,
+        Visible = false,
+        BackgroundTransparency = 1
+    })
+
+    initComponentFolders(self)
+
+    return self
+end
+
+function SubPage:Open()
+    self:Connect()
+    self.Instance.Visible = true
+end
+
+function SubPage:Close()
+    self:Disconnect()
+    self.Instance.Visible = false
+end
+
 --[[BUTTON COMPONENT]]
 --@summary Buttons are a Page Component, must be parented to a Page
 Button = {}
@@ -391,6 +438,34 @@ end
 --@function Set the size
 function Label:SetSize(size)
     return setComponentSize(self, size)
+end
+
+--[[INSERT LABEL COMPONENT]]
+InsertLabel = {}
+InsertLabel.__index = InsertLabel
+InsertLabel.new = function(page, rbxprop, textprop)
+    local self = setmetatable({}, Label)
+    self.Name = rbxprop.Name
+    self.Main = page
+    self.Main.Labels[rbxprop.Name] = self
+    self.Instance = Instance.new("Frame", page.Folders.Labels)
+    self.UIType = "InsertLabel"
+
+    applyRBXPropertiesInstance(self.Instance, rbxprop, {
+        Position = Gui.PosEnum.Middle.Position,
+        Size = Gui.SizeEnum.Point,
+        Visible = true,
+        ZIndex = 2
+    })
+
+    self.FitText = FitTextInsert.new(self, inheritDefaultProperties({
+        Text = rbxprop.Name,
+        Position = Gui.PosEnum.Middle.Position,
+        AnchorPoint = Gui.PosEnum.Middle.AnchorPoint,
+        ZIndex = 3
+    }, textprop))
+
+    return self
 end
 
 --[[IMAGE COMPONENT]]
@@ -528,6 +603,44 @@ function FitText:SetSize(size)
     return setComponentSize(self, size)
 end
 
+--[[FIT TEXT INSERT COMPONENT]]
+FitTextInsert = {}
+FitTextInsert.__index = FitTextInsert
+FitTextInsert.new = function(component, rbxprop)
+    local self = setmetatable({}, FitText)
+    self.Name = component.Name
+    self.UIType = "FitTextInsert"
+    local text = Instance.new("TextBox", component.Instance)
+    applyRBXPropertiesInstance(text, rbxprop, {
+        Text = "FitTextIns",
+        Position = Gui.PosEnum.Middle.Position,
+        AnchorPoint = Gui.PosEnum.Middle.AnchorPoint,
+        Size = UDim2.fromScale(0.8, 0.8),
+        Visible = true,
+        BorderSizePixel = 0,
+        BackgroundTransparency = 1,
+        TextScaled = true,
+        ZIndex = component.Instance.ZIndex + 1
+    })
+    self.Instance = text
+    self.Main = component
+    return self
+end
+
+function FitTextInsert:SetText(str)
+    return setFitText(self, str)
+end
+
+--@function Set the position or anchorPoint
+function FitTextInsert:SetPos(pos, anchorPoint)
+    return setComponentPos(self, pos, anchorPoint)
+end
+
+--@function Set the size
+function FitTextInsert:SetSize(size)
+    return setComponentSize(self, size)
+end
+
 --[[TAG]]
 Tag = {tags = {}}
 Tag.__index = Tag
@@ -582,7 +695,10 @@ local RBXUI = {
         Size = Gui.SizeEnum
     },
     Tag = Tag,
-    Image = Image
+    Image = Image,
+    SubPage = SubPage,
+    InsertLabel = InsertLabel,
+    FitTextInsert = FitTextInsert
 }
 
 return RBXUI

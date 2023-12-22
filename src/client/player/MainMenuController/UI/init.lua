@@ -10,7 +10,7 @@ function Create()
 
     -- Init all Pages as Pages before their initialization functions.
     for i, _ in pairs(Pages) do
-        rbxui.Page.new(gui, {Name = i})
+        rbxui.Page.new(gui, {Name = i, BackgroundTransparency = 1})
         print('made page ' .. tostring(i))
     end
     for _, v in pairs(Pages) do
@@ -25,7 +25,6 @@ end
 
 function Pages.MainPage(gui, page)
     local mainPage = gui.Pages.MainPage
-    mainPage.Instance.BackgroundTransparency = 1
 
     local playButton = IconButton(mainPage, "PLAY", Assets.ICON_MENU_BURGER)
     playButton:SetPos(UDim2.fromScale(0.118,0.386))
@@ -54,6 +53,8 @@ end
 
 function Pages.SettingsPage(gui)
     local settingsPage = gui.Pages.SettingsPage
+    local _TEMP_SETTINGS = {keybinds = {jump = "Space"}, crosshair = {}, camera = {}}
+    require(script.Pages.Settings)(settingsPage, _TEMP_SETTINGS)
 end
 
 -- Components

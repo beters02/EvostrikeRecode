@@ -9,7 +9,11 @@ end
 
 -- Calls when player is loaded via remote.
 function PlayerManager.PlayerLoaded(player)
-    
+end
+
+-- Return true if player died.
+function PlayerManager.PlayerDiedVerification()
+    return true
 end
 
 return PlayerManager

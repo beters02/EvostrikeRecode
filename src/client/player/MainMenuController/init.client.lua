@@ -1,4 +1,6 @@
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
 local Framework = require(ReplicatedStorage:WaitForChild("Framework"))
 local FrTypes = Framework.TypeEnums
 local states = require(Framework.Modules.States)
@@ -21,3 +23,14 @@ end
 
 -- Init Main Menu UI
 local mainMenuGui = require(script:WaitForChild("UI"))
+
+-- Init Keybinds
+UserInputService.InputBegan:Connect(function(input, gp)
+    if input.KeyCode == Enum.KeyCode.M then
+        if mainMenuGui.Enabled then
+            mainMenuGui:Disable()
+        else
+            mainMenuGui:Enable()
+        end
+    end
+end)

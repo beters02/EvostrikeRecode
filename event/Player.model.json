@@ -4,6 +4,14 @@
       {
         "Name": "Loaded",
         "ClassName": "RemoteFunction"
+      },
+      {
+        "Name": "DiedVerification",
+        "ClassName": "RemoteFunction"
+      },
+      {
+        "Name": "Died",
+        "ClassName": "RemoteEvent"
       }
     ]
   }
