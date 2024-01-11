@@ -51,8 +51,8 @@ end
 Framework.AssetManager = {}
 
 --@summary Returns a model with the desired Instance
-function Framework.AssetManager:Insert(parent, asset): Model
-    local assetInstance = Framework.Assets[parent][asset]
+function Framework.AssetManager:Insert(assetModuleName: string, asset: string): Model
+    local assetInstance = Framework.Assets[assetModuleName][asset]
     assetInstance = assetInstance:Clone()
     assetInstance.Parent = ReplicatedStorage
     return assetInstance
@@ -69,6 +69,11 @@ function Framework.AssetManager:Seperate(model): any
     newModel.Parent = ReplicatedStorage
     model:Destroy()
     return newModel
+end
+
+--@summary Wrapper for AssetManager:Seperate(AssetManager:Insert())
+function Framework.AssetManager:InsertSeperate(category: string, asset: string)
+    return Framework.AssetManager:Seperate(Framework.AssetManager:Insert(category, asset))
 end
 
 -- Module Functions

@@ -20,4 +20,4 @@ if currentLState ~= "FINISH" then
 end
 
 -- Init Main Menu UI
-local mainMenuGui = require(script:WaitForChild("UI"))
+local mainMenuModule = require(script:WaitForChild("Main")):init()

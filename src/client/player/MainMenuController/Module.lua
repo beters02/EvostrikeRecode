@@ -1,3 +1,0 @@
-local MainMenu = {}
-
-return MainMenu
